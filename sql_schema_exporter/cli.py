@@ -41,8 +41,8 @@ def get_connection_details_from_user():
             print("Invalid choice. Assuming Windows Authentication.")
         # For 'yes' or invalid choice, username and password remain None
 
-    output_dir_str = input(f"Output directory [{DEFAULT_OUTPUT_DIR}]: ")
-    output_dir = Path(output_dir_str) if output_dir_str else DEFAULT_OUTPUT_DIR
+    # Automatically determine output directory from sanitized database name
+    output_dir = Path(sanitize_for_filename(database))
 
     return server, database, username, password, output_dir
 
