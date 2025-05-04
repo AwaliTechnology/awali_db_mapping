@@ -15,6 +15,8 @@ venv.bak/
 
 # Behave test output
 features/test_output/
+features/test_output_data/
 
 # Application output (if running cli.py directly)
-output/
+# Output dir is now named after the database
+# output/ # Keep this if you might still use a default 'output' sometimes

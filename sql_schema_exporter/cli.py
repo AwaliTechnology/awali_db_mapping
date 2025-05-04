@@ -1,5 +1,6 @@
 import getpass
 import logging
+import re # Import regex for sanitization
 from pathlib import Path
 # Use absolute import instead of relative for direct script execution
 from sql_schema_exporter.core import export_schema
@@ -7,8 +8,19 @@ from sql_schema_exporter.core import export_schema
 # Setup logging (consistent with core)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-DEFAULT_OUTPUT_DIR = Path('output') # Default relative to where script is run
+# --- Helper Functions ---
+def sanitize_for_filename(name):
+    """Removes or replaces characters invalid for filenames/directory names."""
+    # Remove leading/trailing whitespace
+    name = name.strip()
+    # Replace sequences of invalid characters (including spaces) with a single underscore
+    name = re.sub(r'[\\/*?:"<>|\s]+', '_', name)
+    # Ensure it's not empty after sanitization
+    if not name:
+        return "_"
+    return name
 
+# --- Main Functions ---
 def get_connection_details_from_user():
     """Prompts the user for connection details."""
     print("Please enter SQL Server connection details:")

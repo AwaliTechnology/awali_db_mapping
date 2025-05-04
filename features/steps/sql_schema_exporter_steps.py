@@ -2,24 +2,50 @@ import os
 import shutil
 from pathlib import Path
 from behave import *
+import re # For sanitization
 from sql_schema_exporter import core # Import the core logic
 
-# Define a default output directory for tests relative to the features dir
-TEST_OUTPUT_DIR = Path(__file__).parent.parent / "test_output"
-
 # --- Helper Functions ---
+def sanitize_for_filename(name):
+    """Removes or replaces characters invalid for filenames/directory names."""
+    # Remove leading/trailing whitespace
+    name = name.strip()
+    # Replace sequences of invalid characters (including spaces) with a single underscore
+    name = re.sub(r'[\\/*?:"<>|\s]+', '_', name)
+    # Ensure it's not empty after sanitization
+    if not name:
+        return "_"
+    return name
+
+def get_test_output_dir(context):
+    """Gets the sanitized output directory path based on the test database name."""
+    # Ensure context.database is set by the 'provides details' step first
+    db_name = getattr(context, 'database', 'default_test_db')
+    sanitized_db_name = sanitize_for_filename(db_name)
+    # Place it inside a general test output area to keep things tidy
+    base_test_output = Path(__file__).parent.parent / "test_output_data"
+    return base_test_output / sanitized_db_name
+
 def clean_output_directory(output_dir):
     """Removes the output directory if it exists."""
     if output_dir.exists():
         shutil.rmtree(output_dir)
+    # Also ensure the base test output directory exists if we derived the path
+    if output_dir.parent.name == "test_output_data":
+        output_dir.parent.mkdir(parents=True, exist_ok=True)
+
 
 # --- Step Implementations ---
 
 @given('the target output directory is empty or does not exist')
 def step_impl(context):
-    context.output_dir = TEST_OUTPUT_DIR
-    clean_output_directory(context.output_dir)
-    assert not context.output_dir.exists()
+    # Output dir depends on the database name, which isn't known yet.
+    # We'll determine and clean it in the 'provides details' step or after_scenario.
+    # For now, just assert the base test dir exists or can be created.
+    base_test_output = Path(__file__).parent.parent / "test_output_data"
+    # Clean the whole base dir before feature? Or rely on after_scenario?
+    # Let's clean in after_scenario based on context.output_dir
+    pass # Defer directory handling
 
 @when('the schema extraction tool is run')
 def step_impl(context):
@@ -50,13 +76,18 @@ def step_impl(context):
     context.username = os.environ.get("TEST_DB_USER", None)              # Example: None for Win Auth
     context.password = os.environ.get("TEST_DB_PASSWORD", None)          # Example: None for Win Auth
 
+    # Determine and clean the output directory based on the database name
+    context.output_dir = get_test_output_dir(context)
+    clean_output_directory(context.output_dir) # Clean before the run
+    assert not context.output_dir.exists()
+
     # Simulate running the core export function with these details
     context.export_success = core.export_schema(
         context.server,
         context.database,
         context.username,
         context.password,
-        context.output_dir
+        context.output_dir # Pass the derived output directory
     )
 
 @step("the user provides invalid connection details interactively")
@@ -67,13 +98,18 @@ def step_impl(context):
     context.username = "invalid_user"
     context.password = "invalid_password"
 
+    # Determine and clean the output directory based on the database name
+    context.output_dir = get_test_output_dir(context)
+    clean_output_directory(context.output_dir) # Clean before the run
+    assert not context.output_dir.exists()
+
     # Simulate running the core export function
     context.export_success = core.export_schema(
         context.server,
         context.database,
         context.username,
         context.password,
-        context.output_dir
+        context.output_dir # Pass the derived output directory
     )
 
 
@@ -135,5 +171,6 @@ def before_feature(context, feature):
     pass
 
 def after_scenario(context, scenario):
-    # Clean up the output directory after each scenario
-    clean_output_directory(TEST_OUTPUT_DIR)
+    # Clean up the output directory used in the scenario, if it was set
+    if hasattr(context, 'output_dir'):
+        clean_output_directory(context.output_dir)
