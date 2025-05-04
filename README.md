@@ -46,9 +46,14 @@ It's recommended to use a Python virtual environment.
 ```bash
 # Create a virtual environment (optional but recommended)
 python3 -m venv .venv
-source .venv/bin/activate  # On Windows use `.venv\Scripts\activate`
 
-# Install required Python packages
+# Activate the virtual environment BEFORE installing packages
+# On macOS/Linux:
+source .venv/bin/activate
+# On Windows:
+# .venv\Scripts\activate
+
+# Install required Python packages inside the active environment
 pip install -r features/requirements.txt
 ```
 The `features/requirements.txt` file includes:
