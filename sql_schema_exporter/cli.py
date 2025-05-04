@@ -18,13 +18,15 @@ def get_connection_details_from_user():
 
     username = None
     password = None
+    # Explicitly check for 'no' to prompt for SQL Server Authentication details
     if auth_method == 'no':
         username = input("Username: ")
         password = getpass.getpass("Password: ") # Use getpass for password security
-    elif auth_method != 'yes' and auth_method != '':
-         print("Invalid choice. Assuming Windows Authentication.")
-         username = None
-         password = None
+    # Otherwise, assume Windows Authentication (for 'yes', empty input, or anything else)
+    else:
+        if auth_method != 'yes' and auth_method != '':
+            print("Invalid choice. Assuming Windows Authentication.")
+        # For 'yes' or invalid choice, username and password remain None
 
     output_dir_str = input(f"Output directory [{DEFAULT_OUTPUT_DIR}]: ")
     output_dir = Path(output_dir_str) if output_dir_str else DEFAULT_OUTPUT_DIR
