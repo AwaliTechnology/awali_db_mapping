@@ -1,7 +1,8 @@
 import getpass
 import logging
 from pathlib import Path
-from .core import export_schema
+# Use absolute import instead of relative for direct script execution
+from sql_schema_exporter.core import export_schema
 
 # Setup logging (consistent with core)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
