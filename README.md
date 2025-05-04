@@ -1,0 +1,102 @@
+# SQL Server Schema Exporter
+
+This project provides a tool to connect to a Microsoft SQL Server database, extract the definitions of stored procedures, views, and tables, and save them into a structured directory layout (`sprocs/`, `views/`, `tables/`) as individual `.sql` files.
+
+The primary goal is to facilitate version control, code review, and offline browsing of database schema objects. See [system_knowledge/project_goal.md](system_knowledge/project_goal.md) for more details.
+
+The project uses a Behavior-Driven Development (BDD) approach with the Behave framework.
+
+## Setup and Installation
+
+### 1. Clone the Repository
+
+```bash
+git clone <your-repository-url>
+cd <your-repository-directory>
+```
+
+### 2. System Dependencies (ODBC Driver)
+
+This tool uses the `pyodbc` Python library, which requires a system-level ODBC driver for SQL Server to be installed.
+
+**On macOS (using Homebrew):**
+
+```bash
+# Tap the Microsoft repository (if you haven't already)
+brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
+
+# Update brew and install the driver (e.g., version 17)
+brew update
+brew install msodbcsql17
+# Note: mssql-tools (sqlcmd, bcp) are optional for this script but often installed alongside
+# brew install mssql-tools
+```
+
+*   Verify the driver installation by checking your `odbcinst.ini` file (e.g., `cat $(brew --prefix)/etc/odbcinst.ini`). You should see an entry like `[ODBC Driver 17 for SQL Server]`.
+*   The Python code in `sql_schema_exporter/core.py` specifies the driver name in the connection string (`DRIVER={ODBC Driver 17 for SQL Server}`). Ensure this matches the name registered in your `odbcinst.ini`.
+
+**On other systems (Linux/Windows):**
+
+Follow Microsoft's official documentation to install the appropriate ODBC driver for your operating system. Ensure the driver is correctly registered so `pyodbc` can find it.
+
+### 3. Python Dependencies
+
+It's recommended to use a Python virtual environment.
+
+```bash
+# Create a virtual environment (optional but recommended)
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows use `.venv\Scripts\activate`
+
+# Install required Python packages
+pip install -r features/requirements.txt
+```
+The `features/requirements.txt` file includes:
+*   `pyodbc`: For connecting to the database.
+*   `behave`: For running the BDD tests.
+
+## Configuration (for Tests)
+
+The Behave tests (`features/steps/sql_schema_exporter_steps.py`) require connection details for a **test** SQL Server database. These are read from environment variables to avoid hardcoding credentials. Set the following variables in your shell before running `behave`:
+
+*   `TEST_DB_SERVER`: The server name/address of your test SQL Server instance.
+*   `TEST_DB_DATABASE`: The name of the test database.
+*   `TEST_DB_USER`: (Optional) The username for SQL Server authentication. Leave unset or empty to use Windows/Trusted Authentication.
+*   `TEST_DB_PASSWORD`: (Optional) The password for SQL Server authentication. Leave unset if using Windows/Trusted Authentication.
+
+Example (using SQL Authentication):
+```bash
+export TEST_DB_SERVER="your_test_server.database.windows.net"
+export TEST_DB_DATABASE="MyTestDatabase"
+export TEST_DB_USER="testuser"
+export TEST_DB_PASSWORD="yoursecurepassword"
+```
+
+Example (using Windows/Trusted Authentication):
+```bash
+export TEST_DB_SERVER="localhost\\SQLEXPRESS"
+export TEST_DB_DATABASE="MyTestDatabase"
+# Leave TEST_DB_USER and TEST_DB_PASSWORD unset
+```
+
+## Usage
+
+### Running the Exporter Tool
+
+Execute the command-line interface script. It will prompt you interactively for the connection details (server, database, authentication method, credentials, output directory).
+
+```bash
+python sql_schema_exporter/cli.py
+```
+
+The extracted schema files will be placed in the specified output directory (default is `output/`).
+
+### Running the Tests
+
+Ensure your test database environment variables are set (see Configuration section).
+
+```bash
+behave
+```
+
+This will run the scenarios defined in `features/sql_schema_exporter.feature` against your test database. Test output files are temporarily created in `features/test_output/` and cleaned up afterwards.
