@@ -34,3 +34,5 @@ This tool will facilitate:
 *   Easier code reviews of schema changes.
 *   Offline browsing and searching of database object definitions.
 *   Potentially recreating the schema in another environment (though this might require additional handling for dependencies and ordering).
+
+This project will be developed using a Behavior-Driven Development (BDD) approach, utilizing the Behave framework for defining and testing features.
