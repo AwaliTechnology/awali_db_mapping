@@ -9,8 +9,11 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # --- Database Connection ---
 def get_db_connection(server, database, username, password):
     """Establishes a connection to the SQL Server database using provided details."""
+    # NOTE: Ensure the DRIVER name matches the one registered in your odbcinst.ini
+    # Common names: {ODBC Driver 17 for SQL Server}, {ODBC Driver 18 for SQL Server}, {msodbcsql17}
+    # Check your system's ODBC configuration if connection fails with 'driver not found'.
     conn_str = [
-        f'DRIVER={{ODBC Driver 17 for SQL Server}}', # Or your appropriate driver
+        f'DRIVER={{ODBC Driver 17 for SQL Server}}',
         f'SERVER={server}',
         f'DATABASE={database}',
     ]
