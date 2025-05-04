@@ -14,7 +14,8 @@ def get_connection_details_from_user():
     print("Please enter SQL Server connection details:")
     server = input("Server Name (e.g., localhost\\SQLEXPRESS or server.database.windows.net): ")
     database = input("Database Name: ")
-    auth_method = input("Use Windows Authentication? (yes/no) [yes]: ").lower()
+    # Clarify that 'no' is needed for SQL Login
+    auth_method = input("Use Windows Authentication (Trusted Connection)? (Enter 'no' for SQL Server Login) [yes]: ").lower()
 
     username = None
     password = None
