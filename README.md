@@ -83,13 +83,14 @@ export TEST_DB_DATABASE="MyTestDatabase"
 
 ### Running the Exporter Tool
 
-Execute the command-line interface script. It will prompt you interactively for the connection details (server, database, authentication method, credentials, output directory).
+Execute the tool as a Python module from the **root directory** of the project (the directory containing the `sql_schema_exporter` folder). This ensures Python correctly recognizes the package structure.
 
 ```bash
-python sql_schema_exporter/cli.py
+# Make sure you are in the project's root directory
+python -m sql_schema_exporter.cli
 ```
 
-The extracted schema files will be placed in the specified output directory (default is `output/`).
+The tool will prompt you interactively for the connection details (server, database, authentication method, credentials, output directory). The extracted schema files will be placed in the specified output directory (default is `output/` relative to where you run the command).
 
 ### Running the Tests
 
