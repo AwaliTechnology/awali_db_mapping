@@ -1,1 +1,20 @@
 .aider*
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment directories
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Behave test output
+features/test_output/
+
+# Application output (if running cli.py directly)
+output/
