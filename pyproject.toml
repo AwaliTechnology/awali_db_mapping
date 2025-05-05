@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "awali_db_mapping"
-version = "0.0.1" # Initial version - pypiteleport.py will update this
+version = "0.0.2" # Initial version - pypiteleport.py will update this
 authors = [
   { name="Your Name", email="your@email.com" }, # CHANGE THIS
 ]
