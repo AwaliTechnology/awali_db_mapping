@@ -1,0 +1,23 @@
+Copyright (c) 2025 Awali Technologies, LLC. All rights reserved.
+
+This software, "awali_db_mapping", is proprietary and confidential information of Awali Technologies, LLC ("Awali").
+
+**License Grant:** Awali grants you a limited, non-exclusive, non-transferable, non-sublicensable license to install and use this software **only** under the following conditions:
+1. You have obtained a valid API key directly from Awali Technologies, LLC.
+2. You have entered into a separate, signed Master License Agreement (MLA) with Awali Technologies, LLC, governing the use of this software and associated services.
+
+**Restrictions:** You may **not**:
+*   Use, copy, modify, merge, publish, distribute, sublicense, or sell copies of the software without a valid API key and signed MLA.
+*   Use the software for any purpose other than as expressly permitted in your signed MLA.
+*   Reverse engineer, decompile, disassemble, or otherwise attempt to discover the source code of the software, except and only to the extent that such activity is expressly permitted by applicable law notwithstanding this limitation.
+*   Remove or alter any copyright, trademark, or other proprietary notices contained in the software.
+
+**No Implied License:** Access to this software package via PyPI or any other distribution channel does not grant any license or right to use the software. Use is strictly prohibited without obtaining the required API key and executing the MLA as described above.
+
+**Disclaimer of Warranty:** This software is provided "AS IS", without warranty of any kind, express or implied. See your signed MLA for any applicable warranties.
+
+**Limitation of Liability:** In no event shall Awali Technologies, LLC be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software. See your signed MLA for specific limitations of liability.
+
+**Governing Law:** Any use of this software is subject to the terms of your signed MLA and the governing law specified therein.
+
+**Contact:** To obtain an API key and inquire about a Master License Agreement, please contact Awali Technologies, LLC at: david@samsonadvisory.com
