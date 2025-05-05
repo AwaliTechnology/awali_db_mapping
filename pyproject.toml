@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "awali_db_mapping"
+version = "0.0.0" # Initial version - pypiteleport.py will update this
+authors = [
+  { name="Your Name", email="your@email.com" }, # CHANGE THIS
+]
+description = "A short description of the awali_db_mapping package." # CHANGE THIS
+readme = "README.md" # Optional: if you have a README.md
+requires-python = ">=3.8" # Specify your minimum Python version
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License", # Choose your license
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    # Add your runtime dependencies here, e.g.:
+    # "requests>=2.20",
+    # "pyodbc", # Based on file summaries
+    # "graphviz", # Based on file summaries
+    # "tomli; python_version < '3.11'", # If supporting older Python for pypiteleport
+]
+
+[project.urls]
+"Homepage" = "https://github.com/AwaliTechnology/awali_db_mapping" # CHANGE THIS if needed
+"Bug Tracker" = "https://github.com/AwaliTechnology/awali_db_mapping/issues" # CHANGE THIS if needed
+
+# If you have command-line scripts, define them here
+# [project.scripts]
+# sql-schema-exporter = "sql_schema_exporter.cli:main" # Example based on file summaries
+# data-lineage-tool = "sql_schema_exporter.lineage:generate_lineage_cli" # Example - adjust actual entry point
+
+# Optional: If using setuptools specific configurations
+# [tool.setuptools.packages.find]
+# where = ["src"]  # look in the src/ directory for packages, if applicable
+# exclude = ["tests*"]
