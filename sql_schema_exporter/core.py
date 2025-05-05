@@ -230,22 +230,28 @@ def export_schema(server, database, username, password, output_dir):
     try:
         conn = get_db_connection(server, database, username, password)
         if conn:
-            # Fetch and save Stored Procedures ('P')
+            logging.debug("Connection established. Fetching stored procedures...")
             fetch_objects(conn, 'P', 'sprocs', output_dir)
 
-            # Fetch and save Views ('V')
+            logging.debug("Fetching views...")
             fetch_objects(conn, 'V', 'views', output_dir)
 
-            # Fetch table names and generate definitions
+            logging.debug("Fetching tables...")
             fetch_tables(conn, 'tables', output_dir) # fetch_tables now calls save_definitions internally
 
             logging.info("Schema export process completed successfully.")
             return True # Indicate success
     except ConnectionError as e:
         # Connection errors already logged by get_db_connection
+        logging.error(f"Export failed due to connection error: {e}") # Add context
         return False # Indicate failure due to connection
+    except pyodbc.Error as db_err:
+        # Catch pyodbc errors specifically that might occur *after* connection
+        logging.error(f"A database error occurred during export: {db_err}")
+        return False # Indicate failure due to database operation error
     except Exception as e:
-        logging.error(f"An unexpected error occurred during export: {e}")
+        # Catch any other unexpected errors
+        logging.error(f"An unexpected non-database error occurred during export: {e}", exc_info=True) # Log traceback
         return False # Indicate failure due to other error
     finally:
         if conn:
