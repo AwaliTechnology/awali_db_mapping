@@ -4,6 +4,7 @@ import re # Import regex for sanitization
 from pathlib import Path
 # Use absolute import instead of relative for direct script execution
 from sql_schema_exporter.core import export_schema
+from sql_schema_exporter.lineage import generate_lineage # Import lineage function
 
 # Setup logging (consistent with core)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -55,10 +56,34 @@ def main():
     # Ensure output directory exists (optional, core.save_definitions also does this)
     # output_dir.mkdir(parents=True, exist_ok=True)
 
-    success = export_schema(server, database, username, password, output_dir)
+    export_success = export_schema(server, database, username, password, output_dir)
 
-    if success:
+    if export_success:
         print(f"\nSchema export completed successfully to {output_dir.resolve()}")
+        # Attempt to generate lineage map
+        print("\nAttempting to generate data lineage map...")
+        logging.info(f"Starting lineage generation for {database}...")
+        try:
+            deps_ok, dot_ok, render_err = generate_lineage(
+                server, database, username, password, output_dir
+            )
+            if deps_ok and dot_ok:
+                print(f"Lineage DOT graph saved in {output_dir.resolve()}")
+                if render_err:
+                    print(f"Warning: {render_err}") # Report render error but don't fail exit code
+                else:
+                    print(f"Lineage graph image rendered in {output_dir.resolve()}")
+            elif not deps_ok:
+                 print("Lineage generation failed during dependency lookup. Check logs.")
+                 # Consider if this should cause exit(1)? For now, just report.
+            else: # deps_ok but not dot_ok
+                 print("Lineage generation failed while saving DOT file. Check logs.")
+
+        except Exception as lineage_e:
+            # Catch unexpected errors during lineage call itself
+            print(f"An unexpected error occurred during lineage generation: {lineage_e}")
+            logging.error(f"Lineage generation failed unexpectedly: {lineage_e}", exc_info=True)
+
     else:
         print("\nSchema export failed. Check logs for details.")
         # Exit with a non-zero code to indicate failure

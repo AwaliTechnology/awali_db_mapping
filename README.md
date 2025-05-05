@@ -39,7 +39,26 @@ brew install msodbcsql17
 
 Follow Microsoft's official documentation to install the appropriate ODBC driver for your operating system. Ensure the driver is correctly registered so `pyodbc` can find it.
 
-### 3. Python Dependencies
+### 3. System Dependencies (Graphviz - for Lineage)
+
+To generate the visual lineage graph image (`.png`), the Graphviz command-line tools (`dot`, etc.) must be installed and available in your system's PATH.
+
+**On macOS (using Homebrew):**
+```bash
+brew install graphviz
+```
+
+**On Debian/Ubuntu Linux:**
+```bash
+sudo apt update && sudo apt install graphviz
+```
+
+**On Windows:**
+Download from the official [Graphviz website](https://graphviz.org/download/) or use a package manager like Chocolatey (`choco install graphviz`). Ensure the `bin` directory of the Graphviz installation is added to your system's PATH environment variable.
+
+*Note: If Graphviz is not installed or found, the tool will still generate the `.gv` (DOT source) file, but it will report an error and skip rendering the image.*
+
+### 4. Python Dependencies
 
 It's recommended to use a Python virtual environment.
 
@@ -59,6 +78,7 @@ pip install -r features/requirements.txt
 The `features/requirements.txt` file includes:
 *   `pyodbc`: For connecting to the database.
 *   `behave`: For running the BDD tests.
+*   `graphviz`: Python interface for creating Graphviz DOT files and rendering them.
 
 ## Configuration (for Tests)
 
@@ -95,7 +115,9 @@ Execute the tool as a Python module from the **root directory** of the project (
 python -m sql_schema_exporter.cli
 ```
 
-The tool will prompt you interactively for the connection details (server, database, authentication method, credentials, output directory). The extracted schema files will be placed in the specified output directory (default is `output/` relative to where you run the command).
+The tool will prompt you interactively for the connection details (server, database, authentication method, credentials).
+The extracted schema files will be placed in an output directory named after the database (e.g., `YourDatabaseName/`).
+After extracting the schema, the tool will also attempt to query database dependencies and generate a data lineage graph (`YourDatabaseName_lineage.gv` and `YourDatabaseName_lineage.gv.png`) in the same output directory.
 
 ### Running the Tests
 
@@ -105,4 +127,4 @@ Ensure your test database environment variables are set (see Configuration secti
 behave
 ```
 
-This will run the scenarios defined in `features/sql_schema_exporter.feature` against your test database. Test output files are temporarily created in `features/test_output/` and cleaned up afterwards.
+This will run all scenarios defined in the `features` directory (including schema export and data lineage tests) against your test database. Test output files are temporarily created in `features/test_output_data/YourTestDatabaseName/` and cleaned up afterwards.

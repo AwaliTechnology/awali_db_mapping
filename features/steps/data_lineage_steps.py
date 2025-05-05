@@ -4,8 +4,9 @@ from pathlib import Path
 from behave import *
 from unittest.mock import patch # For mocking graphviz executable check
 
-# Assuming core and lineage modules will exist
-from sql_schema_exporter import core, lineage
+import logging # Import logging
+from sql_schema_exporter import core
+from sql_schema_exporter import lineage # Now this should work
 # Import helpers from the other steps file
 from .sql_schema_exporter_steps import get_test_output_dir, clean_output_directory, sanitize_for_filename
 
@@ -54,52 +55,51 @@ def step_impl(context):
     context.render_error = None
 
     # Simulate mocking graphviz rendering if needed
-    mock_render = not getattr(context, 'graphviz_found', True)
+    skip_render = not getattr(context, 'graphviz_found', True)
+    context.dependencies_queried = False # Default status
+    context.dot_file_created = False     # Default status
 
     try:
-        # --- This is where the core lineage logic will be called ---
-        # Placeholder for now:
-        # lineage.generate_lineage(
-        #     server=context.server,
-        #     database=context.database,
-        #     username=context.username,
-        #     password=context.password,
-        #     output_dir=context.output_dir,
-        #     skip_render=mock_render # Pass flag to skip rendering if mocking 'not found'
-        # )
-        # Simulate success for now if connection is valid
-        if not getattr(context, 'invalid_connection', False):
-             context.dependencies_queried = True
-             # Simulate file creation for valid connection scenario
-             dot_path = context.output_dir / f"{sanitize_for_filename(context.database)}_lineage.gv"
-             png_path = context.output_dir / f"{sanitize_for_filename(context.database)}_lineage.gv.png"
-             dot_path.parent.mkdir(parents=True, exist_ok=True)
-             dot_path.touch() # Create empty file
-             if not mock_render:
-                 png_path.touch() # Create empty file
-             else:
-                 # Simulate the render error report
-                 context.render_error = "Graphviz executable not found"
+        # Call the actual lineage generation function
+        deps_ok, dot_ok, render_err = lineage.generate_lineage(
+            server=context.server,
+            database=context.database,
+            username=context.username,
+            password=context.password,
+            output_dir=context.output_dir,
+            skip_render=skip_render
+        )
+        context.dependencies_queried = deps_ok
+        context.dot_file_created = dot_ok
+        context.render_error = render_err # Store potential render error message
 
-        else:
-             # Simulate connection error during lineage if connection is invalid
-             raise ConnectionError("Simulated connection error during lineage")
-
-    except ConnectionError as e:
+    except (ConnectionError, RuntimeError, pyodbc.Error) as e:
+        # Catch errors raised by generate_lineage or its sub-functions
+        context.lineage_error = e
+        # Ensure flags reflect failure
+        context.dependencies_queried = False
+        context.dot_file_created = False
+        logging.warning(f"Caught expected error during lineage generation test: {e}") # Log for test visibility
+    except Exception as e:
+        # Catch any other unexpected errors during the call
         context.lineage_error = e
         context.dependencies_queried = False
-    except Exception as e: # Catch other potential errors from lineage logic
-        context.lineage_error = e
-        context.dependencies_queried = False # Assume query failed if any error occurs
+        context.dot_file_created = False
+        logging.error(f"Caught unexpected error during lineage generation test: {e}", exc_info=True)
 
 
 @then(u'the tool should query database dependencies successfully')
 def step_impl(context):
+    # Check the flag set by the 'When' step based on generate_lineage return value
     assert getattr(context, 'dependencies_queried', False) is True, "Dependencies should have been queried successfully"
-    assert context.lineage_error is None, f"Expected no lineage error, but got: {context.lineage_error}"
+    # Also ensure no unexpected error occurred during the process
+    assert getattr(context, 'lineage_error', None) is None, f"Expected no lineage error, but got: {context.lineage_error}"
 
 @then(u'a lineage graph DOT file named "<database_name>_lineage.gv" should be created in the output directory')
 def step_impl(context):
+    # Check the flag set by the 'When' step
+    assert getattr(context, 'dot_file_created', False) is True, "DOT file should have been created"
+    # Verify file existence as well
     db_name_sanitized = sanitize_for_filename(context.database)
     expected_file = context.output_dir / f"{db_name_sanitized}_lineage.gv"
     assert expected_file.exists(), f"Expected DOT file '{expected_file}' not found."
@@ -107,7 +107,12 @@ def step_impl(context):
 
 @then(u'a rendered lineage graph image named "<database_name>_lineage.gv.png" should be created in the output directory')
 def step_impl(context):
+    # Check that no render error was reported
+    assert getattr(context, 'render_error', None) is None, f"Expected no rendering error, but got: {context.render_error}"
+    # Verify file existence
     db_name_sanitized = sanitize_for_filename(context.database)
+    # The actual filename might vary slightly based on graphviz version/output format,
+    # but '.png' is the default we expect from .render()
     expected_file = context.output_dir / f"{db_name_sanitized}_lineage.gv.png"
     assert expected_file.exists(), f"Expected PNG file '{expected_file}' not found."
     assert expected_file.is_file(), f"Expected PNG file '{expected_file}' is not a file."
@@ -119,15 +124,23 @@ def step_impl(context):
 
 @then(u'the tool should report a connection error during dependency lookup')
 def step_impl(context):
-    assert context.lineage_error is not None, "Expected a lineage error, but none was reported."
+    # Check that an error was caught during the 'When' step
+    assert hasattr(context, 'lineage_error') and context.lineage_error is not None, \
+        "Expected a lineage error, but none was reported."
     # Check if it's specifically a connection-related error (more robust check)
-    assert isinstance(context.lineage_error, (ConnectionError, RuntimeError)), \
-        f"Expected ConnectionError or RuntimeError, but got {type(context.lineage_error)}: {context.lineage_error}"
+    # generate_lineage catches ConnectionError from get_db_connection
+    # or RuntimeError from fetch_dependencies
+    assert isinstance(context.lineage_error, (ConnectionError, RuntimeError, pyodbc.Error)), \
+        f"Expected ConnectionError, RuntimeError, or pyodbc.Error, but got {type(context.lineage_error)}: {context.lineage_error}"
+    # Verify the dependency query flag is False
     assert getattr(context, 'dependencies_queried', True) is False, "Dependencies should not have been queried successfully"
 
 
 @then(u'no lineage graph DOT file should be created')
 def step_impl(context):
+    # Check the flag from the 'When' step
+    assert getattr(context, 'dot_file_created', True) is False, "DOT file should not have been created"
+    # Double-check file system just in case
     db_name_sanitized = sanitize_for_filename(context.database)
     expected_file = context.output_dir / f"{db_name_sanitized}_lineage.gv"
     assert not expected_file.exists(), f"DOT file '{expected_file}' should not exist, but it does."
@@ -144,8 +157,12 @@ def step_impl(context):
 
 @then(u'the tool should report an error during graph rendering')
 def step_impl(context):
-    assert getattr(context, 'render_error', None) is not None, "Expected a rendering error report."
-    # We could check the specific error message if the lineage function returns it
+    # Check the render_error message stored in the context by the 'When' step
+    render_error = getattr(context, 'render_error', None)
+    assert render_error is not None, "Expected a rendering error report, but none was found."
+    # Optionally, check for specific content in the error message
+    assert "executable not found" in render_error.lower(), \
+        f"Expected 'executable not found' in render error, but got: {render_error}"
 
 # --- Environment Control (Shared with other steps) ---
 # Use the after_scenario from sql_schema_exporter_steps.py implicitly
