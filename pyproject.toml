@@ -11,10 +11,12 @@ authors = [
 description = "A short description of the awali_db_mapping package." # CHANGE THIS
 readme = "README.md" # Optional: if you have a README.md
 requires-python = ">=3.8" # Specify your minimum Python version
-license = {text = "MIT"} # Use SPDX identifier or license text
+# Indicate that the license details are in a separate file.
+# YOU MUST CREATE a LICENSE.txt (or similar) file with your commercial terms.
+license = {file = "LICENSE.txt"}
 classifiers = [
     "Programming Language :: Python :: 3",
-    # "License :: OSI Approved :: MIT License", # Classifier is deprecated, use license field above
+    "License :: Other/Proprietary License", # Clearly state it's not standard OSI approved
     "Operating System :: OS Independent",
 ]
 dependencies = [
@@ -36,6 +38,9 @@ dependencies = [
 
 # Optional: If using setuptools specific configurations
 [tool.setuptools.packages.find]
-where = ["."]  # Semicolon added automatically by the formatter
-include = ["sql_schema_exporter*"] # Explicitly include only the main package
-exclude = ["features*", "tests*"] # Explicitly exclude tests/features if they exist at top level
+# Look for packages in the current directory ('.')
+where = ["."]
+# Explicitly include only the 'sql_schema_exporter' directory and its submodules
+include = ["sql_schema_exporter*"]
+# Explicitly exclude other top-level directories like tests or documentation
+exclude = ["features*", "tests*", "system_knowledge*"]
