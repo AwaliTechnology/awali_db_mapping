@@ -31,10 +31,13 @@ dependencies = [
 "Homepage" = "https://github.com/AwaliTechnology/awali_db_mapping" # CHANGE THIS if needed
 "Bug Tracker" = "https://github.com/AwaliTechnology/awali_db_mapping/issues" # CHANGE THIS if needed
 
-# If you have command-line scripts, define them here
-# [project.scripts]
-# sql-schema-exporter = "sql_schema_exporter.cli:main" # Example based on file summaries
-# data-lineage-tool = "sql_schema_exporter.lineage:generate_lineage_cli" # Example - adjust actual entry point
+# Define the command-line scripts that should be created upon installation
+[project.scripts]
+# This creates the 'awali_db_mapping' command and points it to the 'main' function
+# inside the 'cli.py' module within the 'sql_schema_exporter' package.
+awali_db_mapping = "sql_schema_exporter.cli:main"
+# Add other scripts here if needed, e.g.:
+# awali-data-lineage = "sql_schema_exporter.lineage:generate_lineage_cli"
 
 # Optional: If using setuptools specific configurations
 [tool.setuptools.packages.find]
