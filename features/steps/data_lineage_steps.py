@@ -5,10 +5,39 @@ from behave import *
 from unittest.mock import patch # For mocking graphviz executable check
 
 import logging # Import logging
+import re # Import re for sanitize_for_filename
 from sql_schema_exporter import core
 from sql_schema_exporter import lineage # Now this should work
-# Import helpers from the other steps file
-from .sql_schema_exporter_steps import get_test_output_dir, clean_output_directory, sanitize_for_filename
+
+# --- Helper Functions (Duplicated from sql_schema_exporter_steps.py) ---
+
+def sanitize_for_filename(name):
+    """Removes or replaces characters invalid for filenames/directory names."""
+    # Remove leading/trailing whitespace
+    name = name.strip()
+    # Replace sequences of invalid characters (including spaces) with a single underscore
+    name = re.sub(r'[\\/*?:"<>|\s]+', '_', name)
+    # Ensure it's not empty after sanitization
+    if not name:
+        return "_"
+    return name
+
+def get_test_output_dir(context):
+    """Gets the sanitized output directory path based on the test database name."""
+    # Ensure context.database is set by the 'provides details' step first
+    db_name = getattr(context, 'database', 'default_test_db')
+    sanitized_db_name = sanitize_for_filename(db_name)
+    # Place it inside a general test output area to keep things tidy
+    base_test_output = Path(__file__).parent.parent / "test_output_data"
+    return base_test_output / sanitized_db_name
+
+def clean_output_directory(output_dir):
+    """Removes the output directory if it exists."""
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
+    # Also ensure the base test output directory exists if we derived the path
+    if output_dir.parent.name == "test_output_data":
+        output_dir.parent.mkdir(parents=True, exist_ok=True)
 
 # --- Context Setup ---
 
