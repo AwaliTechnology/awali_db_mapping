@@ -136,24 +136,12 @@ def update_pyproject_version(pyproject_path: Path, current_version: str, new_ver
 def main():
     print("--- PyPI Teleport ---")
 
-    # 1. Check for uncommitted changes
-    print("Checking git status...")
-    status_result = run_command(["git", "status", "--porcelain"], capture_output=True)
-    if status_result.stdout.strip():
-        print("\nError: Your working directory has uncommitted changes.")
-        print("Please commit or stash them before running this script.")
-        print("\nGit status output:")
-        print(status_result.stdout)
-        sys.exit(1)
-    print("Git status clean.")
-
-    # 2. Get current branch
+    # 1. Get current branch
     branch_result = run_command(["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True)
     current_branch = branch_result.stdout.strip()
     print(f"Current git branch: {current_branch}")
 
-
-    # 3. Get current version
+    # 2. Get current version
     current_version = get_current_version(PYPROJECT_PATH)
     print(f"Current version in {PYPROJECT_PATH}: {current_version}")
 
