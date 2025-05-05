@@ -11,9 +11,10 @@ authors = [
 description = "A short description of the awali_db_mapping package." # CHANGE THIS
 readme = "README.md" # Optional: if you have a README.md
 requires-python = ">=3.8" # Specify your minimum Python version
+license = {text = "MIT"} # Use SPDX identifier or license text
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License", # Choose your license
+    # "License :: OSI Approved :: MIT License", # Classifier is deprecated, use license field above
     "Operating System :: OS Independent",
 ]
 dependencies = [
@@ -34,6 +35,7 @@ dependencies = [
 # data-lineage-tool = "sql_schema_exporter.lineage:generate_lineage_cli" # Example - adjust actual entry point
 
 # Optional: If using setuptools specific configurations
-# [tool.setuptools.packages.find]
-# where = ["src"]  # look in the src/ directory for packages, if applicable
-# exclude = ["tests*"]
+[tool.setuptools.packages.find]
+where = ["."]  # Semicolon added automatically by the formatter
+include = ["sql_schema_exporter*"] # Explicitly include only the main package
+exclude = ["features*", "tests*"] # Explicitly exclude tests/features if they exist at top level
