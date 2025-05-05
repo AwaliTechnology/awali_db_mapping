@@ -1,4 +1,5 @@
 import logging
+import os # Import the os module
 import pyodbc
 from pathlib import Path
 from graphviz import Digraph
