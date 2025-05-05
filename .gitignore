@@ -20,3 +20,4 @@ features/test_output_data/
 # Application output (if running cli.py directly)
 # Output dir is now named after the database
 # output/ # Keep this if you might still use a default 'output' sometimes
+WH_Data_AI/sprocs/dbo.CalculateAchievableGoal.sql
